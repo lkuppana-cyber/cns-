@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Crypto Security Controller</title>
+<style>
+body {
+    font-family: Arial;
+    text-align: center;
+    margin-top: 50px;
+}
+input, select, button {
+    margin: 10px;
+    padding: 10px;
+}
+#output {
+    margin-top: 20px;
+    font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+<h2>🔐 Crypto Security Controller</h2>
+
+<input type="text" id="inputText" placeholder="Enter text"><br>
+<input type="number" id="key" placeholder="Enter key"><br>
+
+<select id="algorithm">
+    <option value="caesar">Caesar Cipher</option>
+    <option value="railfence">Rail Fence</option>
+    <option value="rsa">RSA</option>
+</select><br>
+
+<button onclick="runSecurity()">Encrypt</button>
+
+<div id="output"></div>
+
+<script>
+function sanitizeInput(input) {
+    return input.replace(/[<>]/g, "");
+}
+
+// Caesar Cipher
+function caesarCipher(text, key) {
+    let result = "";
+    for (let i = 0; i < text.length; i++) {
+        let char = text[i];
+
+        if (char.match(/[a-z]/i)) {
+            let code = text.charCodeAt(i);
+
+            if (code >= 65 && code <= 90) {
+                char = String.fromCharCode(((code - 65 + key) % 26) + 65);
+            } else if (code >= 97 && code <= 122) {
+                char = String.fromCharCode(((code - 97 + key) % 26) + 97);
+            }
+        }
+        result += char;
+    }
+    return result;
+}
+
+// Rail Fence Cipher
+function railFenceCipher(text, key) {
+    let rail = Array.from({ length: key }, () => []);
+    let dirDown = false;
+    let row = 0;
+
+    for (let i = 0; i < text.length; i++) {
+        rail[row].push(text[i]);
+
+        if (row === 0 || row === key - 1) dirDown = !dirDown;
+        row += dirDown ? 1 : -1;
+    }
+
+    return rail.flat().join("");
+}
+
+// Simple RSA (demo only)
+function rsaCipher(text, key) {
+    let result = "";
+    for (let i = 0; i < text.length; i++) {
+        result += (text.charCodeAt(i) ** key % 3233) + " ";
+    }
+    return result;
+}
+
+function runSecurity() {
+    let text = document.getElementById("inputText").value;
+    let key = parseInt(document.getElementById("key").value);
+    const algorithm = document.getElementById("algorithm").value;
+
+    text = sanitizeInput(text);
+
+    if (!text || text.trim().length === 0) {
+        alert("Text cannot be empty");
+        return;
+    }
+
+    if (isNaN(key)) {
+        alert("Key must be a number");
+        return;
+    }
+
+    let output = "";
+
+    if (algorithm === "caesar") {
+        if (!/^[a-zA-Z]+$/.test(text)) {
+            alert("Only alphabets allowed");
+            return;
+        }
+        if (key < 0 || key > 25) {
+            alert("Key must be 0–25");
+            return;
+        }
+        output = caesarCipher(text, key);
+    }
+
+    if (algorithm === "railfence") {
+        if (key < 2 || key > text.length) {
+            alert("Rails must be >= 2");
+            return;
+        }
+        output = railFenceCipher(text, key);
+    }
+
+    if (algorithm === "rsa") {
+        if (key < 2 || key > 10) {
+            alert("RSA key must be small (2–10 for demo)");
+            return;
+        }
+        output = rsaCipher(text, key);
+    }
+
+    document.getElementById("output").innerText = "🔒 Output: " + output;
+}
+</script>
+
+</body>
+</html>
